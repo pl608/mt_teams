@@ -30,7 +30,7 @@ function mt_teams.load_teams()
     mt_teams.teams = minetest.deserialize(storage:get_string('mt_teams:table')) 
 end
 function mt_teams.save_teams()
-    storage:set_bool('mt_teams:is_in_here_somewhere', true)
+    storage:set_float('mt_teams:is_in_here_somewhere', 1)
     storage:set_string('mt_teams:table', minetest.serialize(mt_teams.teams))
 end
 
@@ -92,8 +92,10 @@ minetest.register_on_mods_loaded(function()
 end)
 minetest.register_on_joinplayer(function(player, last_login)
     local meta = player:get_meta()
-    if storage:get_bool('mt_teams:is_in_here_somewhere') == true then
+    if storage:contains('mt_teams:is_in_here_somewhere') == true then
         mt_teams.load_teams()
+    else
+        mt_teams.save_teams()
     end
     if meta:contains('mt_teams:team') == false then
         math.randomseed(100)
