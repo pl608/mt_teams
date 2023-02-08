@@ -27,18 +27,12 @@ mt_teams.teams_num = 1
 players = {}
 
 function mt_teams.load_teams()
-    table.insert_all(mt_teams.teams, 
-    {})
+    mt_teams.teams = minetest.deserialize(storage:get_string('mt_teams:table')) 
 end
---mt_teams.load_teams()
-minetest.register_on_joinplayer(function(player, last_login)
-    mt_teams.set_team(player)
-    math.randomseed(100)
-    local rand = math.ceil((math.random()*mt_teams.teams_num))
-    mt_teams.set_team(player, rand)
-    minetest.chat_send_player(player:get_player_name(), mt_teams.teams[rand].name)
+function mt_teams.save_teams()
+    storage:set_float('mt_teams:is_in_here_somewhere', 1)
+    storage:set_string('mt_teams:table', minetest.serialize(mt_teams.teams))
 end
-)
 
 function mt_teams.get_team(player)
     local meta = player:get_meta()
@@ -51,18 +45,31 @@ end
 function mt_teams.get_name_id(id)
     return mt_teams.teams[id].name
 end
+function mt_teams.remove_player(player)--removes player and if not there returns false
+    local name = player:get_player_name()
+    local team = player:get_meta():get_float('mt_teams:team')
+    i = 1
+    for key, val in mt_teams.teams[team].members do
+        if val==name then mt_teams.teams[team].members.remove(i) return true
+        else i = i+1 end
+    end
+    return false
+end
 function mt_teams.set_team(player,team)
     local meta = player:get_meta()
     if meta:get_float('mt_teams:team') ~= nil then
-        minetest.chat_send_player(player:get_player_name(), "Can't change teams yet")
+        local r = mt_teams.remove_player(player)
+        if r == false then
+            minetest.chat_send_player(player:get_player_name(), "Not listed in "..mt_teams.get_teams_name(player).."'s members")
         --no way to get rid of members in a team so for now... no changing
-    else if mt_teams.teams[team] ~= nil then
+        end 
+    end 
+    if mt_teams.teams[team] ~= nil then
         meta:set_float('mt_teams:team', team)
         table_insert(mt_teams.teams[team].members,player:get_player_name())
         minetest.chat_send_all(string.format("*** %s joined team "..minetest.colorize(mt_teams.teams[meta:get_float("mt_teams:team")].color,mt_teams.teams[team].name),minetest.colorize(mt_teams.teams[meta:get_float("mt_teams:team")].color, player:get_player_name())))
-        else
-            minetest.chat_send_player(player:get_player_name(), "Team doesnt appear to exist")
-        end
+    else
+        minetest.chat_send_player(player:get_player_name(), "Team doesnt appear to exist")
     end
 end
 function mt_teams.create_team(player, name, color)
@@ -77,4 +84,24 @@ function mt_teams.create_team(player, name, color)
         name=name,
         id=mt_teams.teams_num
     })
+    mt_teams.save_teams()
 end
+
+minetest.register_on_mods_loaded(function()
+    mt_teams.load_teams()
+end)
+minetest.register_on_joinplayer(function(player, last_login)
+    local meta = player:get_meta()
+    if storage:contains('mt_teams:is_in_here_somewhere') == true then
+        mt_teams.load_teams()
+    else
+        mt_teams.save_teams()
+    end
+    if meta:contains('mt_teams:team') == false then
+        math.randomseed(100)
+        local rand = math.ceil((math.random()*mt_teams.teams_num))
+        mt_teams.set_team(player, rand)
+        minetest.chat_send_player(player:get_player_name(), mt_teams.teams[rand].name)
+    end
+end
+)
