@@ -17,19 +17,25 @@ mt_teams.colors ={
     white='#FFFFFF',
     yellow='#ffe400',
 }
-mt_teams.teams = {}
+mt_teams.teams = {{color=mt_teams.colors.orange,
+        owner='singplayer',
+        name='base',
+        id=mt_teams.teams_num
+    }}
 mt_teams.teams_num = 1
 players = {}
 
 function mt_teams.load_teams()
-    
+    table.insert_all(mt_teams.teams, 
+    {})
 end
-
+--mt_teams.load_teams()
 minetest.register_on_joinplayer(function(player, last_login)
     mt_teams.set_team(player)
     math.randomseed(100)
-    local rand = math.floor((math.random()*mt_teams.teams_num))
-    mt_teams.set_teams(player, team)
+    local rand = math.ceil((math.random()*mt_teams.teams_num))
+    mt_teams.set_team(player, rand)
+    minetest.chat_send_player(player:get_player_name(), mt_teams.teams[rand].name)
 end
 )
 
@@ -47,9 +53,9 @@ end
 function mt_teams.set_team(player,team)
     local meta = player:get_meta()
     if mt_teams.teams[team] ~= nil then
-        meta:set_float('team', team)
-        minetest.chat_send_all(string.format("*** %s joined team "..to_string(mt_teams.teams[team].name),
-    minetest.colorize(players[name_], name_)))
+        meta:set_float('mt_teams:team', team)
+        minetest.chat_send_all(string.format("*** %s joined team "..minetest.colorize(mt_teams.teams[meta:get_float("mt_teams:team")].color,mt_teams.teams[team].name),minetest.colorize(mt_teams.teams[meta:get_float("mt_teams:team")].color, player:get_player_name())))
+        
     else
         minetest.chat_send_player(player:get_player_name(), "Team doesnt appear to exist")
     end
