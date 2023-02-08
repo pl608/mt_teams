@@ -20,6 +20,7 @@ mt_teams.colors ={
 mt_teams.teams = {{color=mt_teams.colors.orange,
         owner='singplayer',
         name='base',
+        members={},
         id=mt_teams.teams_num
     }}
 mt_teams.teams_num = 1
@@ -52,12 +53,16 @@ function mt_teams.get_name_id(id)
 end
 function mt_teams.set_team(player,team)
     local meta = player:get_meta()
-    if mt_teams.teams[team] ~= nil then
+    if meta:get_float('mt_teams:team') ~= nil then
+        minetest.chat_send_player(player:get_player_name(), "Can't change teams yet")
+        --no way to get rid of members in a team so for now... no changing
+    else if mt_teams.teams[team] ~= nil then
         meta:set_float('mt_teams:team', team)
+        table_insert(mt_teams.teams[team].members,player:get_player_name())
         minetest.chat_send_all(string.format("*** %s joined team "..minetest.colorize(mt_teams.teams[meta:get_float("mt_teams:team")].color,mt_teams.teams[team].name),minetest.colorize(mt_teams.teams[meta:get_float("mt_teams:team")].color, player:get_player_name())))
-        
-    else
-        minetest.chat_send_player(player:get_player_name(), "Team doesnt appear to exist")
+        else
+            minetest.chat_send_player(player:get_player_name(), "Team doesnt appear to exist")
+        end
     end
 end
 function mt_teams.create_team(player, name, color)
