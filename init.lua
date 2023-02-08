@@ -18,7 +18,7 @@ mt_teams.colors ={
     yellow='#ffe400',
 }
 mt_teams.teams = {}
-mt_teams.teams_num = 0
+mt_teams.teams_num = 1
 players = {}
 
 function mt_teams.load_teams()
@@ -27,7 +27,7 @@ end
 
 minetest.register_on_joinplayer(function(player, last_login)
     mt_teams.set_team(player)
-    math.randomseed()
+    math.randomseed(100)
     local rand = math.floor((math.random()*mt_teams.teams_num))
     mt_teams.set_teams(player, team)
 end
