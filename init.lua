@@ -39,7 +39,7 @@ function mt_teams.get_team(player)
 end
 function mt_teams.get_teams_name(player)
     local meta = player:get_meta()
-    return meta:get_name("mt_teams:name")
+    return meta:get_string("mt_teams:name")
 end
 function mt_teams.get_name_id(id)
     return mt_teams.teams[id].name
@@ -51,7 +51,7 @@ function mt_teams.set_team(player,team)
         minetest.chat_send_all(string.format("*** %s joined team "..to_string(mt_teams.teams[team].name),
     minetest.colorize(players[name_], name_)))
     else
-        minetest.chat_send_player(player:get_name(), "Team doesnt appear to exist")
+        minetest.chat_send_player(player:get_player_name(), "Team doesnt appear to exist")
     end
 end
 function mt_teams.create_team(player, name, color)
