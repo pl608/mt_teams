@@ -28,12 +28,15 @@ players = {}
 
 function mt_teams.load_teams()
     local des = minetest.deserialize(storage:get_string('mt_teams:table'))
+    mt_teams.teams_num = storage:get_float('mt_teams:num')
     if des ~= nil then
        mt_teams.teams = des
     end
 end
 function mt_teams.save_teams()
     storage:set_float('mt_teams:is_in_here_somewhere', 1)
+    mt_teams.teams_num = storage:get_float('mt_teams:num')
+
     storage:set_string('mt_teams:table', minetest.serialize(mt_teams.teams))
 end
 
@@ -95,27 +98,34 @@ function mt_teams.create_team(player, name, color)
         members={},
         id=mt_teams.teams_num
     })
+    mt_teams.set_team(player, mt_teams.teams_num)
     mt_teams.save_teams()
     return name..' team created with '..color..' color'
 end
-function simple_cmd(name,func_)
+function simple_cmd(name,description,func_)
     minetest.register_chatcommand(name, {
-    privs = {
-        interact = true,
-    },
-    func = func_
+        description=description,
+
+        privs = {
+            interact = true,
+        },
+        func = func_
 })
 end
 
 --Chats cmds
-simple_cmd('get_team',function(name) 
+simple_cmd('get_team','Get the name of the team you are on',function(name) 
     local player = minetest.get_player_by_name(name)
     return true, mt_teams.get_teams_name(player,true)
 end)
-simple_cmd('create_team <color>',function(name, color)
-        local player = minetest.get_player_by_name(name)
-        return true, mt_teams.create_team(player,name,color) 
-    end)
+minetest.register_chatcommand('create_team', {
+    description='Create a team and join it',
+    privs={interact=true},
+    params = 'team_name <color>',
+    func = function(name,param)
+        return true, name..'called '..param
+    end
+})
 
 --minetest functions
 minetest.register_on_mods_loaded(function()
