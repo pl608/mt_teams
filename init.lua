@@ -44,12 +44,13 @@ function mt_teams.get_team(player)
     local meta = player:get_meta()
     return meta:get_float("mt_teams:team")
 end
-function mt_teams.get_teams_name(player,for_cmd)
-    local meta = player:get_meta()
+local get_team = mt_teams.get_team
+function mt_teams.get_team_name(player,for_cmd)
+    name = mt_teams.get_name_id(get_team(player))
     if for_cmd then
-        return 'You are on the '..meta:get_string("mt_teams:name")..' team'
+        return 'You are on the '..name..' team'
     else
-        return meta:get_string("mt_teams:name")
+        return name
     end
 end
 function mt_teams.get_name_id(id)
@@ -57,7 +58,7 @@ function mt_teams.get_name_id(id)
 end
 function mt_teams.remove_player(player)--removes player and if not there returns false
     local name = player:get_player_name()
-    local team = player:get_meta():get_float('mt_teams:team')
+    local team = get_team(player)
     i = 1
     if team ~= 0 then
         if mt_teams.teams[team].members ~= nil then
@@ -74,11 +75,12 @@ function mt_teams.set_team(player,team)
     if meta:get_float('mt_teams:team') ~= nil then
         --local r = mt_teams.remove_player(player)
         --if r == false then
-        --    minetest.chat_send_player(player:get_player_name(), "Not listed in "..mt_teams.get_teams_name(player).."'s members")
+        --    minetest.chat_send_player(player:get_player_name(), "Not listed in "..mt_teams.get_team_name(player).."'s members")
         --no way to get rid of members in a team so for now... no changing
     end 
     if mt_teams.teams[team] ~= nil then
         meta:set_float('mt_teams:team', team)
+
         table.insert_all(mt_teams.teams[team].members,player:get_player_name())
         minetest.chat_send_all(string.format("*** %s joined team "..minetest.colorize(mt_teams.teams[meta:get_float("mt_teams:team")].color,mt_teams.teams[team].name),minetest.colorize(mt_teams.teams[meta:get_float("mt_teams:team")].color, player:get_player_name())))
     else
@@ -116,7 +118,7 @@ end
 --Chats cmds
 simple_cmd('get_team','Get the name of the team you are on',function(name) 
     local player = minetest.get_player_by_name(name)
-    return true, mt_teams.get_teams_name(player,true)
+    return true, mt_teams.get_team_name(player,true)
 end)
 minetest.register_chatcommand('create_team', {
     description='Create a team and join it',
@@ -128,20 +130,22 @@ minetest.register_chatcommand('create_team', {
 })
 
 --minetest functions
-minetest.register_on_mods_loaded(function()
-    mt_teams.load_teams()
+function test_ls()
+    --mt_teams.load_teams()
     if storage:contains('mt_teams:is_in_here_somewhere') == true then
         mt_teams.load_teams()
     else
         mt_teams.save_teams()
     end
-end)
+end
 minetest.register_on_joinplayer(function(player, last_login)
     local meta = player:get_meta()
     local team = meta:get_float('mt_teams:team')
+    if mt_teams.teams[1] == nil then
+        test_ls()
+    end
     if team == 0 then
-        math.randomseed(100)
-        local rand = math.ceil((math.random()*mt_teams.teams_num))
+        local rand = 1
         mt_teams.set_team(player, rand)
         minetest.chat_send_player(player:get_player_name(), mt_teams.teams[rand].name)
     else
