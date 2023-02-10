@@ -102,7 +102,7 @@ function mt_teams.create_team(player, name, color)
     })
     mt_teams.set_team(player, mt_teams.teams_num)
     mt_teams.save_teams()
-    return name..' team created with '..color..' color'
+    return name..' team created with '..minetest.colorize(color,color)..' color'
 end
 function simple_cmd(name,description,func_)
     minetest.register_chatcommand(name, {
@@ -120,21 +120,41 @@ simple_cmd('get_team','Get the name of the team you are on',function(name)
     return true, mt_teams.get_team_name(player,true)
 end)
 minetest.register_chatcommand('create_team', {
-    description='Create a team and join it',
+    description='Create a team(with a random team) and join it',
     privs={interact=true},
-    params = 'name <color>',
+    params = 'name',
     func = function(name,param)
-        local t_name = param.split(' ')[1]
-        local color = param.split(' ')[2]
-        if color == (nil or '') then 
-            math.randomseed(100)
-            local rand = math.ceil((math.random()*mt_teams.teams_num))
-            color = mt_teams.color[rand+1]
+        local t_name = param
+        local color = ''
+        math.randomseed(100)
+        local rand = math.ceil((math.random()*mt_teams.teams_num))
+        color = mt_teams.color[rand+1]
         if t_name == (nil or '') then return false, 'Need to provide a valid name'
-        else return true, mt_teams.create_team(minetest.get_player_by_name(name),t_name,color)
+        else return true, mt_teams.create_team(minetest.get_player_by_name(name),t_name,color) end
+    end}
+)
+minetest.register_chatcommand('list_teams', {
+    description = 'List all created teams',
+    privs={interact=true},
+    func = function(name)
+        for key, val in mt_teams.teams do
+            minetest.chat_send_player(name, minetest.colorize(val.color, val.name)..' owned by '..val.owner..' id: '..val.id)
+        end
     end
 })
+minetest.register_chatcommand('list_team_members',{
+    description = 'List the members on the team (leave empty for your team)',
+    privs={interact=true},
+    params = '<team id>',
+    func = function(name,param)
+        local team = mt_teams.teams[tonumber(param)]
+        local membs = team.members
+        for key, val in membs do
+            minetest.chat_send_player(name, minetest.colorize(team.color, val))
+        end
+    end
 
+})
 --minetest functions
 function test_ls()
     --mt_teams.load_teams()
