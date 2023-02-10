@@ -107,7 +107,6 @@ end
 function simple_cmd(name,description,func_)
     minetest.register_chatcommand(name, {
         description=description,
-
         privs = {
             interact = true,
         },
@@ -123,9 +122,16 @@ end)
 minetest.register_chatcommand('create_team', {
     description='Create a team and join it',
     privs={interact=true},
-    params = 'team_name <color>',
+    params = 'name <color>',
     func = function(name,param)
-        return true, name..'called '..param
+        local t_name = param.split(' ')[1]
+        local color = param.split(' ')[2]
+        if color == (nil or '') then 
+            math.randomseed(100)
+            local rand = math.ceil((math.random()*mt_teams.teams_num))
+            color = mt_teams.color[rand+1]
+        if t_name == (nil or '') then return false, 'Need to provide a valid name'
+        else return true, mt_teams.create_team(minetest.get_player_by_name(name),t_name,color)
     end
 })
 
