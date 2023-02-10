@@ -128,7 +128,7 @@ minetest.register_chatcommand('create_team', {
         local color = ''
         math.randomseed(100)
         local rand = math.ceil((math.random()*mt_teams.teams_num))
-        color = mt_teams.color[rand+1]
+        color = mt_teams.colors[rand+1]
         if t_name == (nil or '') then return false, 'Need to provide a valid name'
         else return true, mt_teams.create_team(minetest.get_player_by_name(name),t_name,color) end
     end}
@@ -137,7 +137,7 @@ minetest.register_chatcommand('list_teams', {
     description = 'List all created teams',
     privs={interact=true},
     func = function(name)
-        for key, val in mt_teams.teams do
+        for val in mt_teams.teams do
             minetest.chat_send_player(name, minetest.colorize(val.color, val.name)..' owned by '..val.owner..' id: '..val.id)
         end
     end
