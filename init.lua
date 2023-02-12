@@ -18,7 +18,7 @@ mt_teams.colors ={
     yellow='#ffe400',
 }
 mt_teams.teams = {{color=mt_teams.colors.orange,
-        owner='singplayer',
+        owner='singleplayer',
         name='base',
         members={},
         id=mt_teams.teams_num
