@@ -120,7 +120,7 @@ simple_cmd('get_team','Get the name of the team you are on',function(name)
     return true, mt_teams.get_team_name(player,true)
 end)
 minetest.register_chatcommand('create_team', {
-    description='Create a team(with a random team) and join it',
+    description='Create a team(with a random color) and join it',
     privs={interact=true},
     params = 'name',
     func = function(name,param)
@@ -143,9 +143,9 @@ minetest.register_chatcommand('list_teams', {
     end
 })
 minetest.register_chatcommand('list_team_members',{
-    description = 'List the members on the team (leave empty for your team)',
+    description = 'List the members a the team specified in the command',
     privs={interact=true},
-    params = '<team id>',
+    params = 'team id',
     func = function(name,param)
         local team = mt_teams.teams[tonumber(param)]
         local membs = team.members
